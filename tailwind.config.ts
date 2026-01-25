@@ -47,6 +47,19 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // sound category semantic colors
+        alarming: {
+          DEFAULT: "hsl(var(--alarming))",
+          foreground: "hsl(var(--alarming-foreground))",
+        },
+        safe: {
+          DEFAULT: "hsl(var(--safe))",
+          foreground: "hsl(var(--safe-foreground))",
+        },
+        noise: {
+          DEFAULT: "hsl(var(--noise))",
+          foreground: "hsl(var(--noise-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -62,6 +75,22 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        // bold accessible fonts
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Inter", "system-ui", "sans-serif"],
+      },
+      fontSize: {
+        // scaled font sizes that respect user preferences
+        "scaled-xs": "calc(0.75rem * var(--text-scale))",
+        "scaled-sm": "calc(0.875rem * var(--text-scale))",
+        "scaled-base": "calc(1rem * var(--text-scale))",
+        "scaled-lg": "calc(1.125rem * var(--text-scale))",
+        "scaled-xl": "calc(1.25rem * var(--text-scale))",
+        "scaled-2xl": "calc(1.5rem * var(--text-scale))",
+        "scaled-3xl": "calc(1.875rem * var(--text-scale))",
+        "scaled-4xl": "calc(2.25rem * var(--text-scale))",
       },
       keyframes: {
         "accordion-down": {
@@ -80,10 +109,19 @@ export default {
             height: "0",
           },
         },
+        "pulse-slow": {
+          "0%, 100%": {
+            opacity: "1",
+          },
+          "50%": {
+            opacity: "0.6",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-slow": "pulse-slow 2s ease-in-out infinite",
       },
     },
   },
