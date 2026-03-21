@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: ["./*.{ts,tsx}", "./src/integrations/**/*.{ts,tsx}"],
   prefix: "",
   theme: {
     container: {
@@ -47,7 +47,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // sound category semantic colors
         alarming: {
           DEFAULT: "hsl(var(--alarming))",
           foreground: "hsl(var(--alarming-foreground))",
@@ -77,12 +76,10 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        // bold accessible fonts
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Inter", "system-ui", "sans-serif"],
       },
       fontSize: {
-        // scaled font sizes that respect user preferences
         "scaled-xs": "calc(0.75rem * var(--text-scale))",
         "scaled-sm": "calc(0.875rem * var(--text-scale))",
         "scaled-base": "calc(1rem * var(--text-scale))",
