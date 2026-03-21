@@ -1,8 +1,8 @@
 // main monitoring page - shows sound detection interface
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useUserSettings } from '@/hooks/useUserSettings';
-import { SoundMonitor } from '@/components/sound/SoundMonitor';
+import { useAuth } from './AuthContext';
+import { useUserSettings } from './useUserSettings';
+import { SoundMonitor } from './SoundMonitor';
 import { AlertTriangle, Volume2, Shield } from 'lucide-react';
 
 const Index = () => {

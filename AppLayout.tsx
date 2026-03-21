@@ -1,8 +1,8 @@
 // main app layout with header and bottom navigation
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { Header } from '@/components/navigation/Header';
-import { BottomNav } from '@/components/navigation/BottomNav';
+import { Header } from './Header';
+import { BottomNav } from './BottomNav';
 
 export function AppLayout() {
   return (

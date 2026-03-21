@@ -1,7 +1,7 @@
 // header component with app title and user controls
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
+import { useAuth } from './AuthContext';
+import { Button } from './button';
 import { Ear, LogOut } from 'lucide-react';
 
 export function Header() {

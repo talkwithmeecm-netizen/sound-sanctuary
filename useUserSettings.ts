@@ -6,8 +6,8 @@
 // ============================================================================
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { UserSettings } from '@/types/sound';
+import { supabase } from './src/integrations/supabase/client';
+import { UserSettings } from './sound';
 
 // ============================================================================
 // default settings for new users

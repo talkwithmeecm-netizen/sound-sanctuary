@@ -8,7 +8,7 @@
 // ============================================================================
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { TmPrediction, categorizeSound, DetectedSound } from '@/types/sound';
+import { TmPrediction, categorizeSound, DetectedSound } from './sound';
 
 // teachable machine model url provided by user
 // this model was trained on teachablemachine.withgoogle.com

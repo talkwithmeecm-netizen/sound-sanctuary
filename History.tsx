@@ -1,13 +1,13 @@
 // notification history page - shows past sound detections
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNotifications } from '@/hooks/useNotifications';
-import { SoundCategoryIcon } from '@/components/icons/SoundCategoryIcon';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from './AuthContext';
+import { useNotifications } from './useNotifications';
+import { SoundCategoryIcon } from './SoundCategoryIcon';
+import { Button } from './button';
+import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Trash2, RefreshCw, Loader2, History as HistoryIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn } from './utils';
 
 const History = () => {
   const { user } = useAuth();

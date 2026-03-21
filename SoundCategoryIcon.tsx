@@ -7,8 +7,8 @@
 
 import React from 'react';
 import { AlertTriangle, Volume2, Shield, LucideIcon } from 'lucide-react';
-import { SoundCategory } from '@/types/sound';
-import { cn } from '@/lib/utils';
+import { SoundCategory } from './sound';
+import { cn } from './utils';
 
 // ============================================================================
 // sound category icon props interface

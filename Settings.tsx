@@ -1,12 +1,12 @@
 // settings page for accessibility preferences
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useUserSettings } from '@/hooks/useUserSettings';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useAuth } from './AuthContext';
+import { useUserSettings } from './useUserSettings';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './card';
+import { Label } from './label';
+import { Slider } from './slider';
+import { Switch } from './switch';
+import { RadioGroup, RadioGroupItem } from './radio-group';
 import { Settings as SettingsIcon, Type, Square, Maximize, Palette, Vibrate, Loader2 } from 'lucide-react';
 
 const Settings = () => {

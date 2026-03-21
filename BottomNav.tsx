@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, History, Settings, LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from './utils';
 
 // navigation item definition
 interface NavItem {
