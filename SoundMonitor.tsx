@@ -73,14 +73,16 @@ export function SoundMonitor({ hapticEnabled = true }: SoundMonitorProps) {
   
   // initialize the ml model and get control functions
   const {
-    isLoading,       // true while loading tensorflow and model
-    isListening,     // true when microphone is active
-    error,           // error message if something failed
-    predictions,     // current frame's predictions
-    detectedSound,   // most recent high-confidence detection
-    startListening,  // function to start microphone
-    stopListening,   // function to stop microphone
-    labels,          // list of sounds the model can detect
+    isLoading,
+    isListening,
+    error,
+    predictions,
+    detectedSound,
+    startListening,
+    stopListening,
+    labels,
+    loadedModelCount,
+    totalModelCount,
   } = useTeachableMachine(handleSoundDetected, 0.7);
 
   // ========== notification permission effect ==========
