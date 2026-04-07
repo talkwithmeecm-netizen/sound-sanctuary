@@ -91,44 +91,68 @@ export interface TmPrediction {
 // ============================================================================
 export const soundCategoryMap: Record<string, SoundCategory> = {
   // ========== alarming sounds ==========
-  // these require immediate user attention and trigger strong haptics
+  // sirens model labels
+  'firetruck': 'alarming',
+  'police siren': 'alarming',
+  'ambulance': 'alarming',
+  'siren': 'alarming',
+  'sirens': 'alarming',
+  // alarm model labels
   'fire alarm': 'alarming',
   'smoke alarm': 'alarming',
-  'siren': 'alarming',
+  'alarm': 'alarming',
+  // yelling model labels
+  'yelling': 'alarming',
+  'screaming': 'alarming',
+  'scream': 'alarming',
+  // general alarming
   'car horn': 'alarming',
   'glass breaking': 'alarming',
-  'scream': 'alarming',
-  'dog bark': 'alarming',
   'baby cry': 'alarming',
   'door knock': 'alarming',
   'doorbell': 'alarming',
-  'alarm': 'alarming',
   'horn': 'alarming',
   'emergency': 'alarming',
-  
+  'dog bark': 'alarming',
+
   // ========== background noise ==========
-  // ambient environmental sounds that are informational only
+  // common background labels from teachable machine models
   'background noise': 'background',
+  '_background noise_': 'background',
+  'background_noise': 'background',
+  'noise': 'background',
+  'ambient': 'background',
   'traffic': 'background',
-  'wind': 'background',
-  'rain': 'background',
   'crowd': 'background',
   'typing': 'background',
   'hvac': 'background',
-  'noise': 'background',
-  'ambient': 'background',
-  '_background noise_': 'background',
-  
+
   // ========== safe sounds ==========
-  // normal sounds that don't require attention
+  // appliances model labels
+  'clock ticking': 'safe',
+  'clock': 'safe',
+  'dishwasher': 'safe',
+  'vacuum cleaner': 'safe',
+  'vacuum': 'safe',
+  'appliance': 'safe',
+  'appliances': 'safe',
+  // weather model labels
+  'rainfall': 'safe',
+  'rain': 'safe',
+  'wind': 'safe',
+  'weather': 'safe',
+  // general safe
   'silence': 'safe',
+  '_silence_': 'safe',
   'speech': 'safe',
   'music': 'safe',
   'birds': 'safe',
   'water': 'safe',
   'talking': 'safe',
   'voice': 'safe',
-  '_silence_': 'safe',
+  'whisper': 'safe',
+  'whispers': 'safe',
+  'footsteps': 'safe',
 };
 
 // ============================================================================
