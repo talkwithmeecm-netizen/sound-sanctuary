@@ -156,9 +156,9 @@ export function SoundMonitor({ hapticEnabled = true }: SoundMonitorProps) {
           {/* status text below button */}
           <p className="text-center text-scaled-xl font-bold">
             {isLoading 
-              ? 'loading model...' 
+              ? `loading models (${loadedModelCount}/${totalModelCount})...`
               : isListening 
-                ? 'listening for sounds...' 
+                ? `listening (${loadedModelCount} models active)...`
                 : 'tap to start listening'}
           </p>
 
