@@ -102,7 +102,7 @@ export function SoundMonitor({ hapticEnabled = true }: SoundMonitorProps) {
   
   // get top 3 predictions for display in the ui
   // sorted by probability (highest first)
-  const topPredictions = predictions.slice(0, 3);
+  const topPredictions = predictions.slice(0, 6);
 
   // ========== render ==========
   
