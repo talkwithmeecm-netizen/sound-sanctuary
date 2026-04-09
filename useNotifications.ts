@@ -128,15 +128,7 @@ export function useNotifications(userId: string | null): UseNotificationsReturn 
         }, ...prev]);
       }
 
-      // trigger browser notification if permission was granted
-      // this shows a system notification even when app is in background
-      if (Notification.permission === 'granted') {
-        new Notification(`SoundSense: ${sound.label}`, {
-          body: `detected ${sound.category} sound with ${Math.round(sound.confidence * 100)}% confidence`,
-          icon: '/favicon.ico',
-          tag: 'soundsense-alert',  // tag prevents duplicate notifications
-        });
-      }
+      // browser notifications are handled by SoundMonitorContext
     } catch (err) {
       console.error('error adding notification:', err);
       setError(err instanceof Error ? err.message : 'failed to save notification');

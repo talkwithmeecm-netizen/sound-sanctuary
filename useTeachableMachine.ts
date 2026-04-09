@@ -50,6 +50,12 @@ export function useTeachableMachine(
   const recognizerRef = useRef<SpeechCommandRecognizer | null>(null);
   const lastDetectionRef = useRef<string>('');
   const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const onSoundDetectedRef = useRef(onSoundDetected);
+
+  // keep callback ref fresh to avoid stale closures
+  useEffect(() => {
+    onSoundDetectedRef.current = onSoundDetected;
+  }, [onSoundDetected]);
 
   // load tensorflow and speech-commands scripts
   const loadScripts = useCallback((): Promise<void> => {
@@ -180,7 +186,7 @@ export function useTeachableMachine(
 
                 console.log('sound detected:', detected);
                 setDetectedSound(detected);
-                onSoundDetected?.(detected);
+                onSoundDetectedRef.current?.(detected);
 
                 if (detectionTimeoutRef.current) clearTimeout(detectionTimeoutRef.current);
                 detectionTimeoutRef.current = setTimeout(() => {
@@ -204,7 +210,7 @@ export function useTeachableMachine(
       console.error('error starting audio recognition:', err);
       setError(err instanceof Error ? err.message : 'failed to start listening - check microphone permissions');
     }
-  }, [confidenceThreshold, onSoundDetected]);
+  }, [confidenceThreshold]);
 
   // stop listening
   const stopListening = useCallback(async () => {
