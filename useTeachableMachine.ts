@@ -1,32 +1,13 @@
 // ============================================================================
-// hook for loading and using multiple teachable machine audio models
-// loads all models simultaneously and aggregates predictions across them
-// each model is associated with a sound category (alarming or safe)
+// hook for loading and using a teachable machine audio model
+// loads the model and provides real-time sound predictions
 // ============================================================================
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { TmPrediction, categorizeSound, DetectedSound, SoundCategory } from './sound';
+import { TmPrediction, categorizeSound, DetectedSound } from './sound';
 
-// ============================================================================
-// model configuration - each teachable machine model with its category
-// alarming models detect dangerous/urgent sounds
-// safe models detect normal environmental sounds
-// ============================================================================
-interface ModelConfig {
-  url: string;
-  name: string;
-  defaultCategory: SoundCategory;
-}
-
-const MODELS: ModelConfig[] = [
-  // alarming sound models
-  { url: 'https://teachablemachine.withgoogle.com/models/XPNCyVZt1/', name: 'sirens', defaultCategory: 'alarming' },
-  { url: 'https://teachablemachine.withgoogle.com/models/oNK4vW-01/', name: 'alarm', defaultCategory: 'alarming' },
-  { url: 'https://teachablemachine.withgoogle.com/models/9KSunvSVQ/', name: 'yelling', defaultCategory: 'alarming' },
-  // safe sound models
-  { url: 'https://teachablemachine.withgoogle.com/models/RGehTMAbc/', name: 'appliances', defaultCategory: 'safe' },
-  { url: 'https://teachablemachine.withgoogle.com/models/pvXxRC7k7/', name: 'weather', defaultCategory: 'safe' },
-];
+// the single teachable machine model url
+const MODEL_URL = 'https://teachablemachine.withgoogle.com/models/ZofTW9DIj/';
 
 // speech command recognizer interface from tensorflow speech-commands library
 interface SpeechCommandRecognizer {
@@ -43,13 +24,6 @@ interface SpeechCommandRecognizer {
   wordLabels: () => string[];
 }
 
-// a loaded model instance paired with its config
-interface LoadedModel {
-  recognizer: SpeechCommandRecognizer;
-  config: ModelConfig;
-  labels: string[];
-}
-
 // return type for the hook
 interface UseTeachableMachineReturn {
   isLoading: boolean;
@@ -60,8 +34,6 @@ interface UseTeachableMachineReturn {
   startListening: () => Promise<void>;
   stopListening: () => Promise<void>;
   labels: string[];
-  loadedModelCount: number;
-  totalModelCount: number;
 }
 
 export function useTeachableMachine(
@@ -74,20 +46,15 @@ export function useTeachableMachine(
   const [predictions, setPredictions] = useState<TmPrediction[]>([]);
   const [detectedSound, setDetectedSound] = useState<DetectedSound | null>(null);
   const [labels, setLabels] = useState<string[]>([]);
-  const [loadedModelCount, setLoadedModelCount] = useState(0);
 
-  // refs for mutable values
-  const modelsRef = useRef<LoadedModel[]>([]);
+  const recognizerRef = useRef<SpeechCommandRecognizer | null>(null);
   const lastDetectionRef = useRef<string>('');
   const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // store latest predictions from each model for aggregation
-  const modelPredictionsRef = useRef<Map<string, TmPrediction[]>>(new Map());
 
   // load tensorflow and speech-commands scripts
   const loadScripts = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
       if ((window as any).tf && (window as any).speechCommands) {
-        console.log('tensorflow and speech commands already loaded');
         resolve();
         return;
       }
@@ -97,15 +64,10 @@ export function useTeachableMachine(
       tfScript.async = true;
 
       tfScript.onload = () => {
-        console.log('tensorflow.js loaded successfully');
         const speechScript = document.createElement('script');
         speechScript.src = 'https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js';
         speechScript.async = true;
-
-        speechScript.onload = () => {
-          console.log('speech commands library loaded successfully');
-          resolve();
-        };
+        speechScript.onload = () => resolve();
         speechScript.onerror = () => reject(new Error('failed to load speech commands library'));
         document.body.appendChild(speechScript);
       };
@@ -114,19 +76,18 @@ export function useTeachableMachine(
     });
   }, []);
 
-  // initialize all models
+  // initialize model
   useEffect(() => {
     let isMounted = true;
 
-    async function initModels() {
+    async function initModel() {
       try {
         setIsLoading(true);
         setError(null);
-        console.log(`starting multi-model initialization (${MODELS.length} models)...`);
+        console.log('loading teachable machine model...');
 
         await loadScripts();
 
-        // wait for speechCommands to be available
         let attempts = 0;
         while (!(window as any).speechCommands && attempts < 50) {
           await new Promise(resolve => setTimeout(resolve, 100));
@@ -138,185 +99,121 @@ export function useTeachableMachine(
           throw new Error('speech commands library not available after loading');
         }
 
-        // load each model - do them sequentially to avoid overwhelming the browser
-        const loaded: LoadedModel[] = [];
-        for (const config of MODELS) {
-          try {
-            console.log(`loading model: ${config.name} (${config.url})`);
-            const recognizer = speechCommands.create(
-              'BROWSER_FFT',
-              undefined,
-              config.url + 'model.json',
-              config.url + 'metadata.json'
-            );
-            await recognizer.ensureModelLoaded();
+        const recognizer = speechCommands.create(
+          'BROWSER_FFT',
+          undefined,
+          MODEL_URL + 'model.json',
+          MODEL_URL + 'metadata.json'
+        );
+        await recognizer.ensureModelLoaded();
 
-            const modelLabels = recognizer.wordLabels();
-            console.log(`model ${config.name} loaded - labels:`, modelLabels);
-
-            loaded.push({ recognizer, config, labels: modelLabels });
-
-            if (isMounted) {
-              setLoadedModelCount(loaded.length);
-            }
-          } catch (err) {
-            console.error(`failed to load model ${config.name}:`, err);
-            // continue loading other models even if one fails
-          }
-        }
+        const modelLabels = recognizer.wordLabels();
+        console.log('model loaded - labels:', modelLabels);
 
         if (isMounted) {
-          if (loaded.length === 0) {
-            throw new Error('no models could be loaded');
-          }
-
-          modelsRef.current = loaded;
-
-          // collect all unique labels across models
-          const allLabels = new Set<string>();
-          loaded.forEach(m => m.labels.forEach(l => allLabels.add(l)));
-          setLabels(Array.from(allLabels));
-
-          console.log(`${loaded.length}/${MODELS.length} models loaded successfully`);
+          recognizerRef.current = recognizer;
+          setLabels(modelLabels);
           setIsLoading(false);
         }
       } catch (err) {
-        console.error('error loading models:', err);
+        console.error('error loading model:', err);
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'failed to load models');
+          setError(err instanceof Error ? err.message : 'failed to load model');
           setIsLoading(false);
         }
       }
     }
 
-    initModels();
+    initModel();
 
     return () => {
       isMounted = false;
-      modelsRef.current.forEach(m => {
-        try { m.recognizer.stopListening(); } catch (e) { /* ignore */ }
-      });
-      if (detectionTimeoutRef.current) {
-        clearTimeout(detectionTimeoutRef.current);
-      }
+      try { recognizerRef.current?.stopListening(); } catch (e) { /* ignore */ }
+      if (detectionTimeoutRef.current) clearTimeout(detectionTimeoutRef.current);
     };
   }, [loadScripts]);
 
-  // start listening on all models
+  // start listening
   const startListening = useCallback(async () => {
-    if (modelsRef.current.length === 0) {
-      setError('models not loaded yet - please wait');
+    if (!recognizerRef.current) {
+      setError('model not loaded yet - please wait');
       return;
     }
 
     try {
       setError(null);
-      console.log(`starting listening on ${modelsRef.current.length} models...`);
 
-      for (const model of modelsRef.current) {
-        await model.recognizer.listen(
-          (result) => {
-            const scores = result.scores;
-            const wordLabels = model.recognizer.wordLabels();
+      await recognizerRef.current.listen(
+        (result) => {
+          const scores = result.scores;
+          const wordLabels = recognizerRef.current!.wordLabels();
 
-            // create predictions with model context
-            const preds: TmPrediction[] = wordLabels.map((label, index) => ({
-              className: label,
-              probability: scores[index],
-            }));
+          const preds: TmPrediction[] = wordLabels.map((label, index) => ({
+            className: label,
+            probability: scores[index],
+          }));
+          preds.sort((a, b) => b.probability - a.probability);
 
-            preds.sort((a, b) => b.probability - a.probability);
+          // filter out background predictions
+          const filteredPreds = preds.filter(p => {
+            const cat = categorizeSound(p.className);
+            return cat !== 'background';
+          });
 
-            // store this model's predictions
-            modelPredictionsRef.current.set(model.config.name, preds);
+          setPredictions(filteredPreds.slice(0, 6));
 
-            // aggregate all model predictions and pick the best ones
-            const allPreds: TmPrediction[] = [];
-            modelPredictionsRef.current.forEach((modelPreds) => {
-              allPreds.push(...modelPreds);
-            });
-            allPreds.sort((a, b) => b.probability - a.probability);
+          const topPred = preds[0];
+          if (topPred && topPred.probability >= confidenceThreshold) {
+            const category = categorizeSound(topPred.className);
 
-            // deduplicate by label, keeping highest probability
-            const seen = new Set<string>();
-            const uniquePreds = allPreds.filter(p => {
-              if (seen.has(p.className)) return false;
-              seen.add(p.className);
-              return true;
-            });
+            if (category !== 'background') {
+              const detectionKey = topPred.className;
+              if (detectionKey !== lastDetectionRef.current) {
+                lastDetectionRef.current = detectionKey;
 
-            setPredictions(uniquePreds.slice(0, 6));
+                const detected: DetectedSound = {
+                  label: topPred.className,
+                  category,
+                  confidence: topPred.probability,
+                  timestamp: new Date(),
+                };
 
-            // check top prediction from this model for detection
-            const topPred = preds[0];
-            if (topPred && topPred.probability >= confidenceThreshold) {
-              const category = categorizeSound(topPred.className);
-              // only trigger detection for non-background sounds,
-              // or if the model's default category matches
-              const isBackgroundLabel = category === 'background';
+                console.log('sound detected:', detected);
+                setDetectedSound(detected);
+                onSoundDetected?.(detected);
 
-              if (!isBackgroundLabel) {
-                const detectionKey = `${model.config.name}:${topPred.className}`;
-                if (detectionKey !== lastDetectionRef.current) {
-                  lastDetectionRef.current = detectionKey;
-
-                  const detected: DetectedSound = {
-                    label: topPred.className,
-                    category,
-                    confidence: topPred.probability,
-                    timestamp: new Date(),
-                  };
-
-                  console.log(`sound detected by ${model.config.name}:`, detected);
-                  setDetectedSound(detected);
-                  onSoundDetected?.(detected);
-
-                  if (detectionTimeoutRef.current) {
-                    clearTimeout(detectionTimeoutRef.current);
-                  }
-                  detectionTimeoutRef.current = setTimeout(() => {
-                    lastDetectionRef.current = '';
-                  }, 2000);
-                }
+                if (detectionTimeoutRef.current) clearTimeout(detectionTimeoutRef.current);
+                detectionTimeoutRef.current = setTimeout(() => {
+                  lastDetectionRef.current = '';
+                }, 2000);
               }
             }
-          },
-          {
-            includeSpectrogram: false,
-            probabilityThreshold: 0.3,
-            invokeCallbackOnNoiseAndUnknown: true,
-            overlapFactor: 0.5,
           }
-        );
-        console.log(`model ${model.config.name} listening started`);
-      }
+        },
+        {
+          includeSpectrogram: false,
+          probabilityThreshold: 0.3,
+          invokeCallbackOnNoiseAndUnknown: true,
+          overlapFactor: 0.5,
+        }
+      );
 
       setIsListening(true);
-      console.log('all models listening');
+      console.log('listening started');
     } catch (err) {
       console.error('error starting audio recognition:', err);
       setError(err instanceof Error ? err.message : 'failed to start listening - check microphone permissions');
     }
   }, [confidenceThreshold, onSoundDetected]);
 
-  // stop listening on all models
+  // stop listening
   const stopListening = useCallback(async () => {
     try {
-      console.log('stopping all model listeners...');
-      for (const model of modelsRef.current) {
-        try {
-          await model.recognizer.stopListening();
-        } catch (e) {
-          console.error(`error stopping ${model.config.name}:`, e);
-        }
-      }
-
+      await recognizerRef.current?.stopListening();
       setIsListening(false);
       setPredictions([]);
       setDetectedSound(null);
       lastDetectionRef.current = '';
-      modelPredictionsRef.current.clear();
-      console.log('all models stopped');
     } catch (err) {
       console.error('error stopping audio recognition:', err);
     }
@@ -331,7 +228,5 @@ export function useTeachableMachine(
     startListening,
     stopListening,
     labels,
-    loadedModelCount,
-    totalModelCount: MODELS.length,
   };
 }
