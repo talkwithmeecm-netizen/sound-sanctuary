@@ -19,19 +19,16 @@ const History = () => {
     refreshNotifications 
   } = useNotifications(user?.id ?? null);
 
-  // get background color for category
   const getBgColor = (category: string) => {
     switch (category) {
       case 'alarming': return 'bg-alarming/10 border-alarming';
       case 'safe': return 'bg-safe/10 border-safe';
-      case 'background': return 'bg-noise/10 border-noise';
       default: return 'bg-muted border-border';
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* header with controls */}
       <div className="flex items-center justify-between">
         <h2 className="text-scaled-2xl font-bold flex items-center gap-3">
           <HistoryIcon className="w-7 h-7 icon-scaled" strokeWidth={2.5} />
@@ -60,14 +57,12 @@ const History = () => {
         </div>
       </div>
 
-      {/* loading state */}
       {isLoading && (
         <div className="flex justify-center py-12">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
         </div>
       )}
 
-      {/* error state */}
       {error && (
         <Card className="border-2 border-destructive">
           <CardContent className="py-6 text-center">
@@ -76,7 +71,6 @@ const History = () => {
         </Card>
       )}
 
-      {/* empty state */}
       {!isLoading && !error && notifications.length === 0 && (
         <Card className="border-2">
           <CardContent className="py-12 text-center">
@@ -91,7 +85,6 @@ const History = () => {
         </Card>
       )}
 
-      {/* notification list */}
       {!isLoading && notifications.length > 0 && (
         <div className="space-y-3">
           {notifications.map((notification) => (
@@ -102,7 +95,7 @@ const History = () => {
               <CardContent className="py-4">
                 <div className="flex items-center gap-4">
                   <SoundCategoryIcon 
-                    category={notification.category} 
+                    category={notification.category as any} 
                     size={32}
                   />
                   <div className="flex-1 min-w-0">
