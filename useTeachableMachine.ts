@@ -186,7 +186,7 @@ export function useTeachableMachine(
 
                 console.log('sound detected:', detected);
                 setDetectedSound(detected);
-                onSoundDetected?.(detected);
+                onSoundDetectedRef.current?.(detected);
 
                 if (detectionTimeoutRef.current) clearTimeout(detectionTimeoutRef.current);
                 detectionTimeoutRef.current = setTimeout(() => {
@@ -210,7 +210,7 @@ export function useTeachableMachine(
       console.error('error starting audio recognition:', err);
       setError(err instanceof Error ? err.message : 'failed to start listening - check microphone permissions');
     }
-  }, [confidenceThreshold, onSoundDetected]);
+  }, [confidenceThreshold]);
 
   // stop listening
   const stopListening = useCallback(async () => {
