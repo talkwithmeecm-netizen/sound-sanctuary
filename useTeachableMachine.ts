@@ -50,6 +50,12 @@ export function useTeachableMachine(
   const recognizerRef = useRef<SpeechCommandRecognizer | null>(null);
   const lastDetectionRef = useRef<string>('');
   const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const onSoundDetectedRef = useRef(onSoundDetected);
+
+  // keep callback ref fresh to avoid stale closures
+  useEffect(() => {
+    onSoundDetectedRef.current = onSoundDetected;
+  }, [onSoundDetected]);
 
   // load tensorflow and speech-commands scripts
   const loadScripts = useCallback((): Promise<void> => {
