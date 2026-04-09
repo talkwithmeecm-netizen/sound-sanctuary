@@ -1,42 +1,17 @@
 // ============================================================================
-// main sound monitoring component with microphone input and classification
+// sound monitor UI component - consumes context instead of owning the hook
 // ============================================================================
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { useTeachableMachine } from './useTeachableMachine';
-import { useHaptic } from './useHaptic';
-import { useNotifications } from './useNotifications';
-import { useAuth } from './AuthContext';
-import { DetectedSound } from './sound';
-import { SoundCategoryIcon, SoundCategoryBadge } from './SoundCategoryIcon';
+import React from 'react';
+import { useSoundMonitor } from './SoundMonitorContext';
+import { SoundCategoryBadge } from './SoundCategoryIcon';
 import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Progress } from './progress';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { cn } from './utils';
 
-interface SoundMonitorProps {
-  hapticEnabled?: boolean;
-}
-
-export function SoundMonitor({ hapticEnabled = true }: SoundMonitorProps) {
-  const { user } = useAuth();
-  const { vibrate } = useHaptic();
-  const { addNotification } = useNotifications(user?.id ?? null);
-  const [showAlert, setShowAlert] = useState(false);
-
-  const handleSoundDetected = useCallback(async (sound: DetectedSound) => {
-    console.log('sound detected in monitor:', sound);
-    if (hapticEnabled) {
-      vibrate(sound.category);
-    }
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
-    if (user) {
-      await addNotification(sound);
-    }
-  }, [hapticEnabled, vibrate, addNotification, user]);
-
+export function SoundMonitor() {
   const {
     isLoading,
     isListening,
@@ -46,13 +21,8 @@ export function SoundMonitor({ hapticEnabled = true }: SoundMonitorProps) {
     startListening,
     stopListening,
     labels,
-  } = useTeachableMachine(handleSoundDetected, 0.7);
-
-  useEffect(() => {
-    if (Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
+    showAlert,
+  } = useSoundMonitor();
 
   const topPredictions = predictions.slice(0, 6);
 

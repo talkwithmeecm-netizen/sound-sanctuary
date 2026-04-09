@@ -7,6 +7,7 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { AuthForm } from "./AuthForm";
 import { AppLayout } from "./AppLayout";
+import { SoundMonitorProvider } from "./SoundMonitorContext";
 import Index from "./Index";
 import History from "./History";
 import Settings from "./Settings";
@@ -34,19 +35,22 @@ function AppContent() {
     return <AuthForm />;
   }
 
-  // show main app if logged in
+  // show main app if logged in - SoundMonitorProvider wraps all routes
+  // so the microphone stays on when switching tabs
   return (
-    <HashRouter>
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<Index />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/settings" element={<Settings />} />
-        </Route>
-        {/* catch-all route for 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </HashRouter>
+    <SoundMonitorProvider>
+      <HashRouter>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+          {/* catch-all route for 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </HashRouter>
+    </SoundMonitorProvider>
   );
 }
 
